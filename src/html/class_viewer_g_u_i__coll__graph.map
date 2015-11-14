@@ -1,0 +1,5 @@
+<map id="ViewerGUI" name="ViewerGUI">
+<area shape="rect" id="node3" href="$class_photo_list.html" title="PhotoList" alt="" coords="95,261,172,288"/>
+<area shape="rect" id="node6" href="$class_photo_directory.html" title="PhotoDirectory" alt="" coords="282,261,389,288"/>
+<area shape="rect" id="node8" href="$class_photo.html" title="Photo" alt="" coords="415,155,471,181"/>
+</map>

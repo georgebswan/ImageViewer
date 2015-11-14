@@ -1,0 +1,6 @@
+<map id="ImagePane" name="ImagePane">
+<area shape="rect" id="node7" href="$class_viewer_g_u_i.html" title="ViewerGUI" alt="" coords="179,413,261,440"/>
+<area shape="rect" id="node13" href="$class_photo.html" title="Photo" alt="" coords="309,155,365,181"/>
+<area shape="rect" id="node9" href="$class_photo_list.html" title="PhotoList" alt="" coords="181,285,259,312"/>
+<area shape="rect" id="node11" href="$class_photo_directory.html" title="PhotoDirectory" alt="" coords="283,285,391,312"/>
+</map>
