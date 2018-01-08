@@ -7,8 +7,11 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.apache.commons.io.FileUtils;
+
 import aberscan.Photo;
 import aberscan.PhotoList;
+import aberscan.PreloadImages;
 
 //Stuff still to do
 //1. More clean up of ImagePane and use of scaleWidth and scaleHeight
@@ -36,20 +39,33 @@ public class ViewerGUI extends JFrame {
         
         // to start, find out the image dir and starting photo
 		photoDir = new PhotoDirectory();
+		photoList = new PhotoList();
 		viewer = new FolderGUI(photoDir);
 		if(viewer.isFileSelected() == false)
 			System.exit(1);
         
         Photo startPhoto = photoDir.getStartPhoto();
-    	//System.out.println("StartPhoto = " + startPhoto.getName());
+    	System.out.println("StartPhoto = " + startPhoto.getName());
+		
+    	photoList.loadPhotos(photoDir.getImageDirectory());
+    	
+    	preloadImages("gbs-before");			//run as a background thread
         
-        // find all the photos in the selected Directory
-        photoList = new PhotoList();
-        photoList.loadImages(photoDir.getImageDirectory());
-        
+        //System.out.println("\n\nAAAA");
         //photoList.printPhotos();
         //find the file to start the viewing at
         photoList.setStartPhoto(startPhoto);
+        
+        
+
+        
+        // find all the photos in the selected Directory
+        //photoList = new PhotoList();
+        //photoList.loadImages(photoDir.getImageDirectory());
+        
+        //photoList.printPhotos();
+        //find the file to start the viewing at
+       // photoList.setStartPhoto(startPhoto);
         
    
         //Set up the main window
@@ -62,6 +78,7 @@ public class ViewerGUI extends JFrame {
         
         //draw the first image
 		Photo photo = photoList.getFirstPhoto();
+		//photo.print();
         ((ImagePane) iPane).setScreenImage(photo);
         
         //Add the control pane
@@ -69,6 +86,14 @@ public class ViewerGUI extends JFrame {
         pane.add("South", cPane);
         
         setContentPane(pane);
+    }
+	
+    private void preloadImages(String str) {
+    	Thread preloadThread;
+    	
+    	preloadThread = new PreloadImages("Preload of Images", str, photoList);
+    	preloadThread.start();
+    	
     }
 
 	
@@ -84,14 +109,24 @@ public class ViewerGUI extends JFrame {
 				// check to see if the photos were cropped before exiting
 				if((vFrame.getIPane().getCropFlag() == true) && (vFrame.getIPane().getCroppedAllFlag() == false)) {
 					if(JOptionPane.showConfirmDialog(null, "Question : Before exiting, do you want to crop all photos?" , "GBS" , JOptionPane.YES_NO_OPTION) == 0) { 
-						vFrame.getPhotoList().cropPhotos(vFrame); 
+						vFrame.getPhotoList().cropPhotos(); 
+						JOptionPane.showMessageDialog(vFrame, "Photos all cropped");
 					} 
 				}
 				
 				//now write out the copied photos. Need to do this after the cropping step
 				if(vFrame.getIPane().getCopyFlag() == true) {
 					if(JOptionPane.showConfirmDialog(null, "Question : Before exiting, do you want to copy selected photos?" , "GBS" , JOptionPane.YES_NO_OPTION) == 0) { 
-						vFrame.getPhotoList().copyPhotos(vFrame ); 
+				    	
+				    	//first of all, make sure the Copy Directory exists
+				    	try {
+							FileUtils.forceMkdir(vFrame.photoDir.getCopyDirectory());
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						
+						vFrame.getPhotoList().copyPhotos(vFrame.photoDir.getCopyDirectory() ); 
+						JOptionPane.showMessageDialog(vFrame, "Photos all copied");
 					} 
 				}
 				System.exit(0);
