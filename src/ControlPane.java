@@ -21,8 +21,11 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import org.apache.commons.io.FileUtils;
+
 import aberscan.Photo;
 import aberscan.PhotoList;
+import aberscan.PreloadImages;
 
 public class ControlPane extends JPanel implements ActionListener, FocusListener{
 	static final long serialVersionUID = 3;
@@ -176,9 +179,16 @@ public class ControlPane extends JPanel implements ActionListener, FocusListener
 			moveToNextPhoto();
 		}
 		else if(e.getSource() == cropAll) {
-			frame.photoList.cropPhotos((ViewerGUI)frame);
+			//first, make a backup of the current photos
+			backupPhotos();
+			
+			//now crop them
+			frame.photoList.cropPhotos();
+
 			//frame.photoList.printPhotos();
 			((ImagePane) frame.iPane).setCroppedAllFlag(true);
+			
+	    	JOptionPane.showMessageDialog(frame, "Photos all cropped");
 		}
 		else if(e.getSource() == rotateLeft) {
 			rotatePhoto(true);
@@ -192,9 +202,9 @@ public class ControlPane extends JPanel implements ActionListener, FocusListener
 		else if(e.getSource() == flipHoriz) {
 			flipPhoto(false);
 		}
-		else if(e.getSource() == selectFile) {
-			selectFile();
-		}
+		//else if(e.getSource() == selectFile) {
+		//	selectFile();
+		//}
 		else
 			System.out.println("ControlPanel ERROR - invalid key click. Button not recognized");
 
@@ -257,6 +267,27 @@ public class ControlPane extends JPanel implements ActionListener, FocusListener
 		}	
 	}
 	
+    private void backupPhotos() {
+    	
+    	//first of all, copy the original photos off to another dir so that they are protected
+    	//make sure the Backup Directory exists
+    	try {
+			FileUtils.forceMkdir(frame.photoDir.getBackupDirectory());
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+    	
+    	//copy the originals into this backup Directory
+		for (Photo photo : frame.photoList.getPhotos()){
+			try {
+				//source file comes from a different place based on whether photos were cropped or not
+				photo.backupPhoto(frame.photoDir.getBackupDirectory());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}			
+		}
+    }
+	
 	private void moveToNextPhoto () {
 		
 		if(frame.photoList.atEnd()) {
@@ -312,6 +343,7 @@ public class ControlPane extends JPanel implements ActionListener, FocusListener
 		}
 	}
 	
+	/*
 	private boolean selectFile() {
 		boolean fileSelected = false;
 		photoDir = new PhotoDirectory();
@@ -337,7 +369,9 @@ public class ControlPane extends JPanel implements ActionListener, FocusListener
 	        
 	        // find all the photos in the selected Directory
 	        photoList = new PhotoList();
-	        photoList.loadImages(photoDir);
+	    	photoList.loadPhotos(photoDir.getImageDirectory());
+	    	
+	    	preloadImages("gbs-before", photoList);			//run as a background thread
 	        
 	        //photoList.printPhotos();
 	        //find the file to start the viewing at
@@ -346,7 +380,7 @@ public class ControlPane extends JPanel implements ActionListener, FocusListener
 	        //draw the first image
 			Photo photo = photoList.getFirstPhoto();
 	        ((ImagePane) iPane).setScreenImage(photo);
-	        System.out.println("AAA");
+	        //System.out.println("AAA");
             
         }
 		else {
@@ -356,4 +390,13 @@ public class ControlPane extends JPanel implements ActionListener, FocusListener
 		
 		return(fileSelected);
 	}
+	
+    private void preloadImages(String str, PhotoList photos) {
+    	Thread preloadThread;
+    	
+    	preloadThread = new PreloadImages("Preload of Images", str, photos);
+    	preloadThread.start();
+    	
+    }
+    */
 }
